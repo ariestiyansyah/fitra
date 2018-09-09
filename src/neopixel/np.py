@@ -33,11 +33,12 @@ def blink_enemy(np, delay=500, color=COLOR, end=7):
 def ultraman_mode(np, delay=250, color=0.0, end=7):
 	blink_enemy(np, delay=delay, color=color, end=end)
 
-def rotate(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS):
-	for reactor in REACTORS:
-		log.debug('Set: {} to color: {}'.format(reactor, color))
-		np.setHSB(reactor, color, saturation, brightness, 1, False)
-		np.show()
-		time.sleep_ms(delay)
-		np.clear()
+def rotate(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, end=10):
+	for i in range(0, end):
+		for reactor in REACTORS:
+			log.debug('Set: {} to color: {}'.format(reactor, color))
+			np.setHSB(reactor, color, saturation, brightness, 1, False)
+			np.show()
+			time.sleep_ms(delay)
+			np.clear()
 

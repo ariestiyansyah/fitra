@@ -12,12 +12,13 @@ BRIGHTNESS = 0.2
 SATURATION = 1.0
 
 
-def start_the_reactors(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS):
+def start_the_reactors(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, clear=True):
 	for reactor in REACTORS:
 		np.setHSB(reactor, color, saturation, brightness, 1, False)
 		np.show()
 		time.sleep_ms(delay)
-	np.clear()
+	if clear:
+		np.clear()
 
 
 def blink_enemy(np, delay=500, color=COLOR, end=7):

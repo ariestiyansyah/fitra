@@ -14,6 +14,7 @@ NEOPIXEL_PIN = 13
 START = 1
 BLINK = 2
 ULTRAMAN = 3
+SPIN = 4
 
 
 class Led(Thing):
@@ -31,12 +32,23 @@ class Led(Thing):
 		self.green = 0
 		self.red = 0
 		self.on = False
+		self.start = False
 		self.action = None
 		
 		self.add_property(
 			Property(self,
 				 'on',
-				 Value(self.on, self.startMyReactor),
+				 Value(self.on, self.spinningReactor),
+				 metadata={
+					'@type': 'OnOffProperty',
+					'label': 'Spinning Reactor',
+					'type': 'boolean',
+					'description': 'Turn on the Reactor',
+				 }))
+		self.add_property(
+			Property(self,
+				 'start',
+				 Value(self.start, self.bootReactor),
 				 metadata={
 					'@type': 'OnOffProperty',
 					'label': 'Start My Reactor',
@@ -68,8 +80,13 @@ class Led(Thing):
 	def constructNp(self):
 		self.np = machine.Neopixel(machine.Pin(self.ledPin, machine.Pin.OUT), 24)
 
-	def startMyReactor(self, onOff):
+	def spinningReactor(self, onOff):
 		self.on = onOff
+		self.action = SPIN
+		self.updateReactor()
+
+	def bootReactor(self, onOff):
+		self.start = onOff
 		self.action = START
 		self.updateReactor()
 
@@ -94,7 +111,7 @@ class Led(Thing):
 		self.updateReactor()
 
 	def updateReactor(self):
-		if not self.on:
+		if not self.on and not self.start:
 			#self.np.deinit()
 			#self.constructNp()
 			self.np.clear()
@@ -107,7 +124,11 @@ class Led(Thing):
 		hex_color = self.convertToHex(self.color)
 		#log.debug("hex: {}".format(hex_color))
 		hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
-		rotate(self.np, 20, hue, saturation, brightness)
+		
+		if self.action == SPIN:
+			rotate(self.np, 20, hue, saturation, brightness)
+		elif self.action == START:
+			start_the_reactors(self.np, 250, hue, saturation, brightness, False)
 
 
 def run_server():

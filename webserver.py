@@ -102,7 +102,7 @@ class Led(Thing):
 		self.action = START
 		self.updateReactor()
 
-	def bootReactor(self, onOff):
+	def oddReactor(self, onOff):
 		self.odd = onOff
 		self.action = ODD
 		self.updateReactor()
@@ -165,3 +165,4 @@ def run_server():
 		server.stop()
 		log.info('done')
 
+	start_the_reactors(led.np, 250)

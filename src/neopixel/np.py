@@ -42,3 +42,13 @@ def rotate(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGH
 			time.sleep_ms(delay)
 			np.clear()
 
+
+def display_odd(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, clear=True):
+	for reactor in REACTORS:
+		if reactor % 2 == 1:
+			continue
+		np.setHSB(reactor, color, saturation, brightness, 1, False)
+		np.show()
+		time.sleep_ms(delay)
+	if clear:
+		np.clear()

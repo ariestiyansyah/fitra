@@ -5,7 +5,7 @@ from property import Property
 from thing import Thing
 from value import Value
 from server import MultipleThings, WebThingServer
-from np import start_the_reactors, blink_enemy, ultraman_mode, rotate
+from np import start_the_reactors, blink_enemy, ultraman_mode, rotate, display_odd
 
 
 log = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ START = 1
 BLINK = 2
 ULTRAMAN = 3
 SPIN = 4
+ODD = 5
 
 
 class Led(Thing):
@@ -33,6 +34,7 @@ class Led(Thing):
 		self.red = 0
 		self.on = False
 		self.start = False
+		self.odd = False
 		self.action = None
 		
 		self.add_property(
@@ -52,6 +54,16 @@ class Led(Thing):
 				 metadata={
 					'@type': 'OnOffProperty',
 					'label': 'Start My Reactor',
+					'type': 'boolean',
+					'description': 'Turn on the Reactor',
+				 }))
+		self.add_property(
+			Property(self,
+				 'odd',
+				 Value(self.odd, self.oddReactor),
+				 metadata={
+					'@type': 'OnOffProperty',
+					'label': 'Display Odd Reactor',
 					'type': 'boolean',
 					'description': 'Turn on the Reactor',
 				 }))
@@ -90,6 +102,11 @@ class Led(Thing):
 		self.action = START
 		self.updateReactor()
 
+	def bootReactor(self, onOff):
+		self.odd = onOff
+		self.action = ODD
+		self.updateReactor()
+
 	def convertToRgb(self, color):
 		red = int(color[1:3], 16) / 256 * 100
 		green = int(color[3:5], 16) / 256 * 100
@@ -111,7 +128,7 @@ class Led(Thing):
 		self.updateReactor()
 
 	def updateReactor(self):
-		if not self.on and not self.start:
+		if not self.on and not self.start and not self.odd:
 			#self.np.deinit()
 			#self.constructNp()
 			self.np.clear()
@@ -129,6 +146,8 @@ class Led(Thing):
 			rotate(self.np, 20, hue, saturation, brightness)
 		elif self.action == START:
 			start_the_reactors(self.np, 250, hue, saturation, brightness, False)
+		elif self.action == ODD:
+			display_odd(self.np, 250, hue, saturation, brightness, False)
 
 
 def run_server():

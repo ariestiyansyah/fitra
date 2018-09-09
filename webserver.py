@@ -5,7 +5,7 @@ from property import Property
 from thing import Thing
 from value import Value
 from server import MultipleThings, WebThingServer
-from np import start_the_reactors, blink_enemy, ultraman_mode
+from np import start_the_reactors, blink_enemy, ultraman_mode, rotate
 
 
 log = logging.getLogger(__name__)
@@ -23,13 +23,19 @@ class Led(Thing):
 			       'My Reactor',
 			       ['OnOffSwitch', 'Light'],
 			       'My Reactor built with SparkFun ESP32 Thing')
+		self.ledPin = ledPin
 		self.np = machine.Neopixel(machine.Pin(ledPin, machine.Pin.OUT), 24)
+		self.brightness = 20
+		self.blue = 0
+		self.color = '#000000'
+		self.green = 0
+		self.red = 0
 		self.on = False
 		self.action = None
 		
 		self.add_property(
 			Property(self,
-				 'start',
+				 'on',
 				 Value(self.on, self.startMyReactor),
 				 metadata={
 					'@type': 'OnOffProperty',
@@ -39,55 +45,69 @@ class Led(Thing):
 				 }))
 		self.add_property(
 			Property(self,
-				 'blink',
-				 Value(self.on, self.blinkEnemy),
+				 'brightness',
+				 Value(self.on, self.ultramanMode),
 				 metadata={
-					'@type': 'OnOffProperty',
-					'label': 'Enemy Spotted',
-					'type': 'boolean',
-					'description': 'Enemy Spotted',
+					'@type': 'BrightnessProperty',
+					'label': 'Become Ultraman',
+					'type': 'number',
+					'description': 'Become Ultraman',
 				 }))
 		self.add_property(
 			Property(self,
-				 'ultraman',
-				 Value(self.on, self.ultramanMode),
+				 'color',
+				 Value(self.color, self.blinkEnemy),
 				 metadata={
-					'@type': 'OnOffProperty',
-					'label': 'Become Ultraman',
-					'type': 'boolean',
-					'description': 'Become Ultraman',
+					'@type': 'ColorProperty',
+					'label': 'Blink Enemy',
+					'type': 'string',
+					'description': 'Blink Enemy',
 				 }))
-		self.updateLed()
+		self.updateReactor()
+
+	def constructNp(self):
+		self.np = machine.Neopixel(machine.Pin(self.ledPin, machine.Pin.OUT), 24)
 
 	def startMyReactor(self, onOff):
 		self.on = onOff
 		self.action = START
-		self.updateLed()
+		self.updateReactor()
 
-	def blinkEnemy(self, onOff):
-		self.on = onOff
+	def convertToRgb(self, color):
+		red = int(color[1:3], 16) / 256 * 100
+		green = int(color[3:5], 16) / 256 * 100
+		blue = int(color[5:7], 16) / 256 * 100	
+		return (red, green, blue)
+
+	def convertToHex(self, color):
+		return int(hex(int(color[1:], 16)), 16)
+
+	def blinkEnemy(self, color):
+		self.color = color
+		self.red, self.green, self.blue = self.convertToRgb(color)
 		self.action = BLINK
-		self.updateLed()
+		self.updateReactor()
 
-	def ultramanMode(self, onOff):
-		self.on = onOff
+	def ultramanMode(self, brightness):
+		self.brightness = brightness
 		self.action = ULTRAMAN
-		self.updateLed()
+		self.updateReactor()
 
-	def updateLed(self):
-		log.debug('Reactor updated: ' + str(self.on))
-		if self.on:
-			if self.action == START:
-				start_the_reactors(self.np)
-			elif self.action == BLINK:
-				blink_enemy(self.np)
-			elif self.action == ULTRAMAN:
-				ultraman_mode(self.np)
-			else:
-				log.info('action not found')
-				self.np.clear()
-		else:
+	def updateReactor(self):
+		if not self.on:
+			#self.np.deinit()
+			#self.constructNp()
 			self.np.clear()
+			return
+		
+		#log.debug("Reactor Updated, action: {}".format(self.action))
+		#log.debug("brightness: {}".format(self.brightness))
+		#log.debug("on: {}".format(self.on))
+		#log.debug("red: {}, green: {}, blue: {}".format(self.red, self.green, self.blue))
+		hex_color = self.convertToHex(self.color)
+		#log.debug("hex: {}".format(hex_color))
+		hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
+		rotate(self.np, 20, hue, saturation, brightness)
 
 
 def run_server():

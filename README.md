@@ -14,9 +14,26 @@ Requirement tools:
 
 ### Datasheet and Soldering
 
+The following datasheet is advised by my friend from SurabayaPy [Tegar Imansyah](https://github.com/tegarimansyah)
+
+![photo6096182430420543507](https://user-images.githubusercontent.com/2667489/45268071-c903bd80-b4a1-11e8-8efd-3f3320a72e40.jpg)
+
+Connect SparkFun and Rainbow LED WS2812 using jumper by using the following
+schema
+
+| SparkFun | Jumper     | LED WS2812 |
+|----------|------------|------------|
+| 13       | Connect to | DIN        |
+| VBAT/VUSB| Connect to | VCC        |
+| GND      | Connect to | GND        |
+
+Use VBAT for battery power and VUSB for USB power
+
 ### Flashing Loboris Micropython
 
-Clone the fork of Loboris Micropython repository
+Clone the fork of Loboris Micropython repository, this repository has been
+updated to allow PUT command to work with microWebSrv and fix for microWebSocket
+based on [this](https://github.com/dhylands/MicroPython_ESP32_psRAM_LoBo) branch and latest update from [Loboris](https://github.com/dhylands/MicroPython_ESP32_psRAM_LoBo) master branch
 
 ```
 git clone https://github.com/ariestiyansyah/MicroPython_ESP32_psRAM_LoBo.git
@@ -37,7 +54,8 @@ Flash it
 ### Install Gateway
 
 You can follow the instruction from
-[https://github.com/mozilla-iot/gateway/blob/master/README.md](https://github.com/mozilla-iot/gateway/blob/master/README.md) to install Mozilla Gateway
+[https://github.com/mozilla-iot/gateway/blob/master/README.md](https://github.com/mozilla-iot/gateway/blob/master/README.md)
+to install Mozilla Gateway in your Raspberry Pi or PC/Mac.
 
 ### Web of Things Micropython
 
@@ -74,16 +92,39 @@ Hierarchy of this project
 └── webserver.py
 ```
 
-### Integrate Neopixel
-
 ### Adding RGB function and Property
 
-To create new RGB Function simply use the example function
+Create sample display_odd function to display LED in odd number
 
-Add property to gateway
+```
+def display_odd(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, clear=True):
+ 	for reactor in REACTORS:
+ 		if reactor % 2 == 1:
+ 			continue
+ 		np.setHSB(reactor, color, saturation, brightness, 1, False)
+ 		np.show()
+ 		time.sleep_ms(delay)
+ 	if clear:
+ 		np.clear()
+```
+Add property to enable it in gateway
+
+```
+self.add_property(
+ 		Property(self,
+ 			'odd',
+ 			Value(self.odd, self.oddReactor),
+ 			metadata={
+ 				'@type': 'OnOffProperty',
+ 				'label': 'Display Odd Reactor',
+ 				'type': 'boolean',
+ 				'description': 'Turn on the Reactor',
+ 			}))
+```
 
 ### Convert RGB to Hex
 
+This function contributed by my partner in crime [Ady Rahmat MA](https://github.com/ngurajeka)
 ```
 def convertToRgb(self, color):
 		red = int(color[1:3], 16) / 256 * 100

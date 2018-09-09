@@ -1,5 +1,7 @@
 # Fitra - Arc Reactor using ESP32 and Web of Things
 
+<img width="800" alt="screen shot 2018-09-10 at 02 44 46" src="https://user-images.githubusercontent.com/2667489/45268263-8b079900-b4a3-11e8-9c0f-07cea7d30864.png">
+
 ## Requirements
 
 Requirement tools:

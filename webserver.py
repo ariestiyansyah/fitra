@@ -28,7 +28,7 @@ class Led(Thing):
 		self.np = machine.Neopixel(machine.Pin(ledPin, machine.Pin.OUT), 24)
 		self.brightness = 20
 		self.blue = 0
-		self.color = '#000000'
+		self.color = '#0055FF'
 		self.green = 0
 		self.red = 0
 		self.on = False

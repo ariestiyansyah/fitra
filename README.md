@@ -38,43 +38,50 @@ updated to allow PUT command to work with microWebSrv and fix for microWebSocket
 based on [this](https://github.com/dhylands/MicroPython_ESP32_psRAM_LoBo) branch and latest update from [Loboris](https://github.com/dhylands/MicroPython_ESP32_psRAM_LoBo) master branch
 
 ```
-git clone https://github.com/ariestiyansyah/MicroPython_ESP32_psRAM_LoBo.git
+$ git clone https://github.com/ariestiyansyah/MicroPython_ESP32_psRAM_LoBo.git
 ```
 
 Config the micropython and build the Firmware
 ```
-cd MicroPython_ESP32_psRAM_LoBo/MicroPython_BUILD/
-./BUILD.sh menuconfig
-./BUILD.sh
+$ cd MicroPython_ESP32_psRAM_LoBo/MicroPython_BUILD/
+$ ./BUILD.sh menuconfig
+$ ./BUILD.sh
 ```
-
 Flash it
 ```
-./BUILD.sh flash
+$ ./BUILD.sh --port /dev/tty.usbserial-DN03F9EP flash
+```
+SparkFun connected my mac using `/dev/tty.usbserial-DN03F9EP` port, this will be
+different on each device, check it using following command
+
+```
+$ ls /dev/tty.usbserial*
 ```
 
 ### Install Gateway
 
-You can follow the instruction from
+Follow instruction from
 [https://github.com/mozilla-iot/gateway/blob/master/README.md](https://github.com/mozilla-iot/gateway/blob/master/README.md)
 to install Mozilla Gateway in your Raspberry Pi or PC/Mac.
 
 ### Web of Things Micropython
 
-Hierarchy of this project
+Clone fitra project
+```
+$ git clone https://github.com/ariestiyansyah/fitra.git
+```
+
+Hierarchy of fitra project
 
 ```
 .
 ├── README.md
-├── config.example.py
 ├── config.py
 ├── connect.py
 ├── main.py
-├── main.py.orig
 ├── src
 │   ├── neopixel
 │   │   ├── np.py
-│   │   └── np.py.bak
 │   ├── upy
 │   │   ├── README.md
 │   │   ├── copy.py
@@ -94,9 +101,27 @@ Hierarchy of this project
 └── webserver.py
 ```
 
+Rename file `config.example.py` to `config.py`, change variable SSID and PASSWORD value with wifi credentials, for example
+```
+SSID = 'FITRA'
+PASSWORD = 'bahagialah'
+```
+
+Sync local files to ESP32 by using [rshell](https://github.com/dhylands/rshell),
+you can also use ampy :) mine is rhsell.
+
+```
+$ rshell -a --buffer-size=30 -p /dev/tty.usbserial-DN03F9EP
+fitra> rsync -v . /flash
+fitra> repl
+>>> Control-D # Soft reset
+```
+
+You will see spining LED in neopixel now.
+
 ### Adding RGB function and Property
 
-Create sample display_odd function to display LED in odd number
+Create sample display_odd function to display LED in odd number by
 
 ```
 def display_odd(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, clear=True):
@@ -109,8 +134,8 @@ def display_odd(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=
  	if clear:
  		np.clear()
 ```
-Add property to enable it in gateway
 
+Add property to enable it in gateway
 ```
 self.add_property(
  		Property(self,
@@ -136,13 +161,86 @@ def convertToRgb(self, color):
 
 def convertToHex(self, color):
 		return int(hex(int(color[1:], 16)), 16)
-
         hex_color = self.convertToHex(self.color)
-		hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
+        hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
 ```
 
 ## Lesson Learned
 
-##
+all problems found during the experiment.
 
+### LED on USB power vs Battery power
 
+The led does not run normally when connected with USB Power, it will run
+smoothly on battery power.
+
+### Could not enter raw repl
+
+```
+rshell -a --buffer-size=30 -p /dev/tty.usbserial-DN03F9EP                              [19:09:48]
+Connecting to /dev/tty.usbserial-DN03F9EP ...
+b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x9as' [size: 2555904; Flash address: 0x190000]\r\n----------------\r\nFilesystem size: 2341888 B\r\n           Used: 142080 B\r\n           Free: 2199808 B\r\n----------------\r\n"
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1186, in connect
+    ip_address = socket.gethostbyname(port)
+socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/rshell", line 11, in <module>
+    load_entry_point('rshell==0.0.14', 'console_scripts', 'rshell')()
+  File "/usr/local/lib/python3.7/site-packages/rshell/command_line.py", line 4, in main
+    rshell.main.main()
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 2712, in main
+    real_main()
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 2674, in real_main
+    connect(args.port, baud=args.baud, wait=args.wait, user=args.user, password=args.password)
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1192, in connect
+    connect_serial(port, baud=baud, wait=wait)
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1216, in connect_serial
+    dev = DeviceSerial(port, baud, wait)
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1462, in __init__
+    Device.__init__(self, pyb)
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1269, in __init__
+    elif not self.remote_eval(test_unhexlify):
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1379, in remote_eval
+    return eval(self.remote(func, *args, **kwargs))
+  File "/usr/local/lib/python3.7/site-packages/rshell/main.py", line 1357, in remote
+    self.pyb.enter_raw_repl()
+  File "/usr/local/lib/python3.7/site-packages/rshell/pyboard.py", line 187, in enter_raw_repl
+    raise PyboardError('could not enter raw repl')
+rshell.pyboard.PyboardError: could not enter raw repl
+```
+
+### CPU Halted, lol
+
+```
+/Users/ariestiyansyah/code/research/github/ariestiyansyah/esp32/fitra> repl
+Entering REPL. Use Control-X to exit.
+repl_serial_to_stdout dev = <rshell.main.DeviceSerial object at 0x102a58cc0>
+>
+MicroPython ESP32_LoBo_v3.2.24 - 2018-09-06 on ESP32 Rizky with ESP32
+Type "help()" for more information.
+>>>
+>>> import machine
+>>> np = machine.Neopixel(machine.Pin(13), 24)
+>>> np.deinit()
+>>> np = machine.Neopixel(machine.Pin(13), 24)
+Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+Core 1 register dump:
+PC      : 0x400e0027  PS      : 0x00060031  A0      : 0x800e01a8  A1      : 0x3ffb1fb0
+A2      : 0x00000018  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000
+A6      : 0x00000000  A7      : 0x00000004  A8      : 0x0ffd114c  A9      : 0x00000000
+A10     : 0x00000009  A11     : 0x00000000  A12     : 0x00002000  A13     : 0x3ff44024
+A14     : 0x00000000  A15     : 0x00060923  SAR     : 0x0000000b  EXCCAUSE: 0x0000001c
+EXCVADDR: 0x00000018  LBEG    : 0x4000c28c  LEND    : 0x4000c296  LCOUNT  : 0x00000000
+Core 1 was running in ISR context:
+EPC1    : 0x400e0027  EPC2    : 0x00000000  EPC3    : 0x00000000  EPC4    : 0x40083410
+
+Backtrace: 0x400e0027:0x3ffb1fb0 0x400e01a5:0x3ffb1fe0 0x40082779:0x3ffb2010 0x400e03ef:0x00000000
+
+CPU halted.
+
+serial port pyboard closed
+```

@@ -51,7 +51,7 @@ Flash it
 ```
 $ ./BUILD.sh --port /dev/tty.usbserial-DN03F9EP flash
 ```
-SparkFun connected my mac using `/dev/tty.usbserial-DN03F9EP` port, this will be
+SparkFun connected to my mac using `/dev/tty.usbserial-DN03F9EP` port, this will be
 different on each device, check it using following command
 
 ```

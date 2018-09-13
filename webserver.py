@@ -70,12 +70,15 @@ class Led(Thing):
 		self.add_property(
 			Property(self,
 				 'brightness',
-				 Value(self.on, self.ultramanMode),
+				 Value(self.brightness, self.ultramanMode),
 				 metadata={
 					'@type': 'BrightnessProperty',
 					'label': 'Become Ultraman',
 					'type': 'number',
 					'description': 'Become Ultraman',
+					'min': 0,
+					'max': 100,
+					'unit': 'percent',
 				 }))
 		self.add_property(
 			Property(self,
@@ -143,10 +146,13 @@ class Led(Thing):
 		hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
 		
 		if self.action == SPIN:
+			log.debug("rotate")
 			rotate(self.np, 20, hue, saturation, brightness)
 		elif self.action == START:
+			log.debug("start")
 			start_the_reactors(self.np, 250, hue, saturation, brightness, False)
 		elif self.action == ODD:
+			log.debug("display odd")
 			display_odd(self.np, 250, hue, saturation, brightness, False)
 
 
@@ -154,6 +160,7 @@ def run_server():
 	log.info('run_server')
 
 	led = Led(NEOPIXEL_PIN)
+	start_the_reactors(led.np, 250, clear=False)
 	
 	server = WebThingServer(MultipleThings([led], 'SparkFun-ESP32-Thing'), port=80)
 
@@ -165,4 +172,3 @@ def run_server():
 		server.stop()
 		log.info('done')
 
-	start_the_reactors(led.np, 250)

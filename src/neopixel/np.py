@@ -36,7 +36,7 @@ def ultraman_mode(np, delay=250, color=0.0, end=7):
 def rotate(np, delay=DELAY, color=COLOR, saturation=SATURATION, brightness=BRIGHTNESS, end=10):
 	for i in range(0, end):
 		for reactor in REACTORS:
-			log.debug('Set: {} to color: {}'.format(reactor, color))
+			#log.debug('Set: {} to color: {}'.format(reactor, color))
 			np.setHSB(reactor, color, saturation, brightness, 1, False)
 			np.show()
 			time.sleep_ms(delay)

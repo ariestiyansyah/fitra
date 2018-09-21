@@ -36,7 +36,7 @@ class Led(Thing):
 		self.start = False
 		self.odd = False
 		self.action = None
-		
+
 		self.add_property(
 			Property(self,
 				 'on',
@@ -113,7 +113,7 @@ class Led(Thing):
 	def convertToRgb(self, color):
 		red = int(color[1:3], 16) / 256 * 100
 		green = int(color[3:5], 16) / 256 * 100
-		blue = int(color[5:7], 16) / 256 * 100	
+		blue = int(color[5:7], 16) / 256 * 100
 		return (red, green, blue)
 
 	def convertToHex(self, color):
@@ -136,7 +136,7 @@ class Led(Thing):
 			#self.constructNp()
 			self.np.clear()
 			return
-		
+
 		#log.debug("Reactor Updated, action: {}".format(self.action))
 		#log.debug("brightness: {}".format(self.brightness))
 		#log.debug("on: {}".format(self.on))
@@ -144,7 +144,7 @@ class Led(Thing):
 		hex_color = self.convertToHex(self.color)
 		#log.debug("hex: {}".format(hex_color))
 		hue, saturation, brightness = self.np.RGBtoHSB(hex_color)
-		
+
 		if self.action == SPIN:
 			log.debug("rotate")
 			rotate(self.np, 20, hue, saturation, brightness)
@@ -160,8 +160,8 @@ def run_server():
 	log.info('run_server')
 
 	led = Led(NEOPIXEL_PIN)
-	start_the_reactors(led.np, 250, clear=False)
-	
+	start_the_reactors(led.np, 250, clear=True)
+
 	server = WebThingServer(MultipleThings([led], 'SparkFun-ESP32-Thing'), port=80)
 
 	try:
